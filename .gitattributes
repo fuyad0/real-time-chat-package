@@ -1,0 +1,14 @@
+* text=auto eol=lf
+
+/.gitignore export-ignore
+/.gitattributes export-ignore
+/ACTION_PLAN.md export-ignore
+/FILE_CHANGES_SUMMARY.md export-ignore
+/FILE_STRUCTURE.md export-ignore
+/IMPLEMENTATION_SUMMARY.md export-ignore
+/QUICK_START.md export-ignore
+/REAL_TIME_STATUS_IMPLEMENTATION.md export-ignore
+/REAL_TIME_STATUS_USAGE_GUIDE.md export-ignore
+/ROADMAP.md export-ignore
+/START_HERE.md export-ignore
+/UI_IMPROVEMENTS.md export-ignore
