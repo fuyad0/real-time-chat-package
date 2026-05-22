@@ -1,14 +1,24 @@
 import { getConversationTitle } from '../utils/conversation';
-import ConversationMenuButton from './ConversationMenuButton';
+import ChatOptionsMenu from './ChatOptionsMenu';
 
 export default function ChatHeader({
     conversation,
     currentUserId,
+    otherUserId,
+    isOtherUserBlocked,
+    onMarkAsRead,
     onShowMembers,
+    onBlockUser,
+    onUnblockUser,
 }: {
     conversation: any;
     currentUserId: number;
+    otherUserId?: number;
+    isOtherUserBlocked: boolean;
+    onMarkAsRead: () => void;
     onShowMembers: () => void;
+    onBlockUser: (userId: number) => void;
+    onUnblockUser: (userId: number) => void;
 }) {
     const title = getConversationTitle(conversation, currentUserId);
     const memberCount = conversation.members?.length ?? 0;
@@ -21,15 +31,19 @@ export default function ChatHeader({
                 </h2>
                 <p className="text-xs text-gray-500">
                     {memberCount} member{memberCount === 1 ? '' : 's'}
+                    {isOtherUserBlocked ? ' · User blocked' : ''}
                 </p>
             </div>
 
-            <ConversationMenuButton
-                label="View conversation members"
-                onClick={(event) => {
-                    event.stopPropagation();
-                    onShowMembers();
-                }}
+            <ChatOptionsMenu
+                conversation={conversation}
+                currentUserId={currentUserId}
+                otherUserId={otherUserId}
+                isOtherUserBlocked={isOtherUserBlocked}
+                onMarkAsRead={onMarkAsRead}
+                onShowMembers={onShowMembers}
+                onBlockUser={onBlockUser}
+                onUnblockUser={onUnblockUser}
             />
         </div>
     );

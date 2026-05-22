@@ -20,12 +20,18 @@ export default function MembersDialog({
     conversation,
     currentUserId,
     onlineUsers,
+    blockedUserIds,
+    onBlockUser,
+    onUnblockUser,
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     conversation: any | null;
     currentUserId: number;
     onlineUsers: Set<number>;
+    blockedUserIds: Set<number>;
+    onBlockUser: (userId: number) => void;
+    onUnblockUser: (userId: number) => void;
 }) {
     const [members, setMembers] = useState<MemberProfile[]>([]);
     const [loading, setLoading] = useState(false);
@@ -96,6 +102,7 @@ export default function MembersDialog({
                     {members.map((member) => {
                         const isOnline = onlineUsers.has(member.id);
                         const isYou = member.id === currentUserId;
+                        const isBlocked = blockedUserIds.has(member.id);
 
                         return (
                             <div
@@ -127,6 +134,11 @@ export default function MembersDialog({
                                                 Admin
                                             </span>
                                         ) : null}
+                                        {isBlocked ? (
+                                            <span className="shrink-0 rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700">
+                                                Blocked
+                                            </span>
+                                        ) : null}
                                     </div>
                                     {member.email ? (
                                         <p className="truncate text-xs text-gray-500">
@@ -143,6 +155,24 @@ export default function MembersDialog({
                                         {isOnline ? 'Active now' : 'Offline'}
                                     </p>
                                 </div>
+
+                                {!isYou ? (
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            isBlocked
+                                                ? onUnblockUser(member.id)
+                                                : onBlockUser(member.id)
+                                        }
+                                        className={`shrink-0 cursor-pointer rounded-lg px-2 py-1 text-xs font-medium ${
+                                            isBlocked
+                                                ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                : 'bg-red-50 text-red-600 hover:bg-red-100'
+                                        }`}
+                                    >
+                                        {isBlocked ? 'Unblock' : 'Block'}
+                                    </button>
+                                ) : null}
                             </div>
                         );
                     })}

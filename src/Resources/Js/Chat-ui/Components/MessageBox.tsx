@@ -1,6 +1,8 @@
 import { usePage } from '@inertiajs/react';
 import { forwardRef } from 'react';
 import type { TypingParticipant } from '../utils/conversation';
+import MessageActionsMenu from './MessageActionsMenu';
+import MessageReactions from './MessageReactions';
 import MessageStatus from './MessageStatus';
 import TypingIndicator from './TypingIndicator';
 
@@ -10,10 +12,14 @@ const MessageBox = forwardRef(
             messages,
             conversation,
             typingParticipants = [],
+            onUnsendMessage,
+            onToggleReaction,
         }: {
             messages: any[];
             conversation: any;
             typingParticipants?: TypingParticipant[];
+            onUnsendMessage: (messageId: number) => void;
+            onToggleReaction: (messageId: number, emoji: string) => void;
         },
         ref: any,
     ) => {
@@ -26,11 +32,12 @@ const MessageBox = forwardRef(
                         {messages.map((m: any) => {
                             const isMe = m.user_id === authUser.id;
                             const attachments = m.attachments || [];
+                            const reactions = m.reactions || [];
 
                             return (
                                 <div
                                     key={m.id}
-                                    className={`flex items-end gap-2 ${
+                                    className={`group flex items-end gap-2 ${
                                         isMe ? 'justify-end' : 'justify-start'
                                     }`}
                                 >
@@ -40,19 +47,33 @@ const MessageBox = forwardRef(
                                                 m.user?.avatar ||
                                                 `https://ui-avatars.com/api/?name=${m.user?.name}`
                                             }
-                                            className="h-8 w-8 rounded-full object-cover"
+                                            className="h-8 w-8 shrink-0 rounded-full object-cover"
                                         />
                                     )}
 
                                     <div className="max-w-[70%]">
                                         <div
-                                            className={`mb-1 text-[11px] ${
+                                            className={`mb-1 flex items-center gap-1 ${
                                                 isMe
-                                                    ? 'text-right text-blue-400'
-                                                    : 'text-left text-gray-500'
+                                                    ? 'justify-end text-blue-400'
+                                                    : 'justify-start text-gray-500'
                                             }`}
                                         >
-                                            {m.user?.name}
+                                            <span className="text-[11px]">
+                                                {m.user?.name}
+                                            </span>
+                                            <MessageActionsMenu
+                                                isOwnMessage={isMe}
+                                                onUnsend={() =>
+                                                    onUnsendMessage(m.id)
+                                                }
+                                                onReact={(emoji) =>
+                                                    onToggleReaction(
+                                                        m.id,
+                                                        emoji,
+                                                    )
+                                                }
+                                            />
                                         </div>
 
                                         <div
@@ -64,6 +85,14 @@ const MessageBox = forwardRef(
                                         >
                                             {m.body}
                                         </div>
+
+                                        <MessageReactions
+                                            reactions={reactions}
+                                            currentUserId={authUser.id}
+                                            onToggle={(emoji) =>
+                                                onToggleReaction(m.id, emoji)
+                                            }
+                                        />
 
                                         <div className="mt-2 space-y-2">
                                             {attachments.length > 0
@@ -106,6 +135,7 @@ const MessageBox = forwardRef(
                                                                           url
                                                                       }
                                                                       target="_blank"
+                                                                      rel="noreferrer"
                                                                       className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-2 text-xs text-red-600"
                                                                   >
                                                                       📄 PDF
@@ -119,6 +149,7 @@ const MessageBox = forwardRef(
                                                                   key={i}
                                                                   href={url}
                                                                   target="_blank"
+                                                                  rel="noreferrer"
                                                                   className="flex items-center gap-2 rounded-lg border bg-gray-100 p-2 text-xs"
                                                               >
                                                                   📎 Download
@@ -131,7 +162,7 @@ const MessageBox = forwardRef(
                                         </div>
                                     </div>
 
-                                    <div className="mt-1 flex items-end gap-1">
+                                    <div className="mt-1 flex shrink-0 items-end gap-1">
                                         <MessageStatus
                                             message={m}
                                             currentUserId={authUser.id}
@@ -144,7 +175,7 @@ const MessageBox = forwardRef(
                                                 m.user?.avatar ||
                                                 `https://ui-avatars.com/api/?name=${m.user?.name}`
                                             }
-                                            className="h-8 w-8 rounded-full object-cover"
+                                            className="h-8 w-8 shrink-0 rounded-full object-cover"
                                         />
                                     )}
                                 </div>

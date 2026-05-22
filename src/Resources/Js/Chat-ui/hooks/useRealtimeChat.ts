@@ -15,6 +15,16 @@ interface RealtimeChatConfig {
         userId: number;
         conversationId: number;
     }) => void;
+    onMessageDeleted?: (payload: {
+        messageId: number;
+        conversationId: number;
+    }) => void;
+    onMessageReactionAdded?: (payload: {
+        messageId: number;
+        conversationId: number;
+        userId: number;
+        reaction: string;
+    }) => void;
     onUserTyping?: (userId: number) => void;
     onUserStoppedTyping?: (userId: number) => void;
     onUserOnline?: (userId: number) => void;
@@ -153,10 +163,33 @@ export function useRealtimeChat(config: RealtimeChatConfig) {
     useEcho(
         conversationChannel,
         '.message:deleted',
-        (event: unknown) => {
-            config.onMessageReceived?.(event);
+        (event: { messageId: unknown; conversationId: unknown }) => {
+            config.onMessageDeleted?.({
+                messageId: Number(event.messageId),
+                conversationId: Number(event.conversationId),
+            });
         },
-        [config.conversationId, isActive, config.onMessageReceived],
+        [config.conversationId, isActive, config.onMessageDeleted],
+        'private',
+    );
+
+    useEcho(
+        conversationChannel,
+        '.message:reaction:added',
+        (event: {
+            messageId: unknown;
+            conversationId: unknown;
+            userId: unknown;
+            reaction: unknown;
+        }) => {
+            config.onMessageReactionAdded?.({
+                messageId: Number(event.messageId),
+                conversationId: Number(event.conversationId),
+                userId: Number(event.userId),
+                reaction: String(event.reaction),
+            });
+        },
+        [config.conversationId, isActive, config.onMessageReactionAdded],
         'private',
     );
 
