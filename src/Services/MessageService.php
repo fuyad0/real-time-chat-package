@@ -13,13 +13,14 @@ class MessageService
     /**
      * Send a message with optional attachments.
      */
-    public function send(int $conversationId, int $userId, string $body, array $attachments = []): Message
+    public function send(int $conversationId, int $userId, string $body, array $attachments = [], ?int $replyToId = null): Message
     {
-        return DB::transaction(function () use ($conversationId, $userId, $body, $attachments) {
+        return DB::transaction(function () use ($conversationId, $userId, $body, $attachments, $replyToId) {
             $message = Message::create([
                 'conversation_id' => $conversationId,
                 'user_id' => $userId,
                 'body' => $body,
+                'reply_to_id' => $replyToId,
             ]);
 
             // Store attachments if provided
@@ -39,15 +40,16 @@ class MessageService
         int $authUserId,
         int $targetUserId,
         string $body,
-        array $attachments = []
+        array $attachments = [],
+        ?int $replyToId = null
     ): Message {
         return DB::transaction(function () use (
             $authUserId,
             $targetUserId,
             $body,
-            $attachments
+            $attachments,
+            $replyToId
         ) {
-
             // Find existing private conversation
             $conversation = Conversation::where('type', 'direct')
                 ->whereHas('members', function ($q) use ($authUserId) {
@@ -87,6 +89,7 @@ class MessageService
                 'conversation_id' => $conversation->id,
                 'user_id' => $authUserId,
                 'body' => $body,
+                'reply_to_id' => $replyToId,
             ]);
 
             // Store attachments
@@ -240,7 +243,7 @@ class MessageService
     public function getMessages(Conversation $conversation, int $page = 1, int $perPage = 50)
     {
         return $conversation->messages()
-            ->with(['user', 'attachments', 'reactions', 'readReceipts'])
+            ->with(['user', 'attachments', 'reactions', 'readReceipts', 'replyTo.user'])
             ->orderBy('created_at', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
     }

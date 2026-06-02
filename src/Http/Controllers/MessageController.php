@@ -65,16 +65,17 @@ class MessageController extends Controller
         $message = $this->messageService->send(
             $conversation->id,
             $request->user()->id,
-            $validated['message'],
-            $request->file('attachments', [])
+            $validated['message'] ?? '',
+            $request->file('attachments', []),
+            $validated['reply_to_id'] ?? null
         );
 
-        broadcast(new MessageSent($message->load('user', 'attachments', 'reactions')))->toOthers();
+        broadcast(new MessageSent($message->load('user', 'attachments', 'reactions', 'replyTo.user')))->toOthers();
         broadcast(new MessageDelivered($message->id, $conversation->id));
 
         return response()->json([
             'success' => true,
-            'data' => $message->load('user', 'attachments', 'reactions'),
+            'data' => $message->load('user', 'attachments', 'reactions', 'replyTo.user'),
             'message' => 'Message sent successfully',
         ], 201);
     }
@@ -91,17 +92,18 @@ class MessageController extends Controller
             $request->user()->id,
             $validated['user_id'],
             $validated['message'],
-            $request->file('attachments', [])
+            $request->file('attachments', []),
+            $validated['reply_to_id'] ?? null
         );
 
         broadcast(new MessageSent(
-            $message->load('user', 'attachments', 'reactions')
+            $message->load('user', 'attachments', 'reactions', 'replyTo.user')
         ))->toOthers();
         broadcast(new MessageDelivered($message->id, $message->conversation_id));
 
         return response()->json([
             'success' => true,
-            'data' => $message->load('conversation', 'user', 'attachments'),
+            'data' => $message->load('conversation', 'user', 'attachments', 'replyTo.user'),
             'message' => 'Message sent successfully',
         ], 201);
     }

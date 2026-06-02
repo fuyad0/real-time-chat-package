@@ -23,6 +23,7 @@ class StoreMessageRequest extends FormRequest
             'message' => 'nullable|string|min:1|max:10000',
             'attachments' => 'nullable|array|max:10',
             'attachments.*' => 'file|max:' . (config('chat.max_attachment_size') * 1024),
+            'reply_to_id' => 'nullable|integer|exists:messages,id',
         ];
     }
 

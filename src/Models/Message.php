@@ -14,6 +14,7 @@ class Message extends Model
     protected $fillable = [
         'conversation_id',
         'user_id',
+        'reply_to_id',
         'body',
         'edited_at',
     ];
@@ -31,6 +32,14 @@ class Message extends Model
     public function conversation(): BelongsTo
     {
         return $this->belongsTo(Conversation::class);
+    }
+
+    /**
+     * Get the message this message is replying to.
+     */
+    public function replyTo(): BelongsTo
+    {
+        return $this->belongsTo(Message::class, 'reply_to_id');
     }
 
     /**
